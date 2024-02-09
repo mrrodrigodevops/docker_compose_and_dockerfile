@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s  # Por padrão, o alvo será 'raspado' a cada 15 segundos
+
+scrape_configs:
+
+  - job_name: 'prometheus'
+
+    # Esse valor irá sobreescrever o valor padrão global para esse alvo
+    scrape_interval: 5s
+
+    metrics_path: /metrics # Endpoint padrão para a raspagem das métricas
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'opensearch'
+    scrape_interval: 10s
+    metrics_path: "/_prometheus/metrics"
+    static_configs:
+      - targets:
+        - opensearch-node1:9200
+        - opensearch-node2:9200
