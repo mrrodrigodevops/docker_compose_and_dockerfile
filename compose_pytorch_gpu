@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  duckling:
+    image: duckling:latest
+    container_name: duckling
+    ports:
+      - "9005:9005"
+    restart: always
+    networks:
+      - ia-network
+    command: duckling-example-exe -p 9005
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  pytorch-2212-tarefas:
+    container_name: pytorch-tarefas
+    image: registry/pytorch-tarefas:latest
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ipc: host
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      stack:
+        soft: 67108864
+        hard: 67108864
+    networks:
+      - ia-network
+    restart: always
+    volumes:
+      - /mnt/scripts:/home/scripts
+      - /etc/localtime:/etc/localtime:ro
+    command: /home/scripts/run_tarefas.sh
+
+networks:
+  ia-network:
+    external: true
