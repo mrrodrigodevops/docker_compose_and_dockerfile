@@ -1,15 +1,6 @@
-version: '3.8'
-
-networks:
-  jenkins_net:
-    external: true
-
 services:
   jenkins:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: jenkins-with-awscli
+    image: jenkins/jenkins:2.457-jdk17
     container_name: jenkins
     privileged: true
     user: root
@@ -20,22 +11,38 @@ services:
     networks:
       - jenkins_net
     volumes:
-      - "/mnt/jenkins_compose/jenkins_configuration:/var/jenkins_home"
+      - ./jenkins_compose/jenkins_configuration:/var/jenkins_home
       - "/var/run/docker.sock:/var/run/docker.sock"
       - /usr/bin/docker:/usr/bin/docker  # Mount the Docker binary from the host
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    environment:
+      - JENKINS_EXT_URL=http://localhost:8081
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.d/
+      - org.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true
+      - PUBLIC_IP
 
-  # agent:
-  #   image: jenkins/ssh-agent:jdk17
-  #   privileged: true
-  #   user: root
-  #   restart: always
-  #   container_name: agent-docker
-  #   expose:
-  #     - 22
-  #   networks:
-  #     - jenkins_net
-  #   volumes:
-  #     - "/var/run/docker.sock:/var/run/docker.sock"
-  #     - /usr/bin/docker:/usr/bin/docker
-  #   environment:
-  #     - JENKINS_AGENT_SSH_PUBKEY=ssh- DevOps
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: agent-jenkins-awscli
+    privileged: true
+    user: root
+    restart: always
+    container_name: agent-jenkins-awscli
+    expose:
+      - 22
+    networks:
+      - jenkins_net
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - /usr/bin/docker:/usr/bin/docker  # Mount the Docker binary from the host
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    environment:
+      - JENKINS_AGENT_SSH_PUBKEY=ssh-ed25519 AAAACN ubuntu@66PF414
+
+networks:
+  jenkins_net:
+    external: true
