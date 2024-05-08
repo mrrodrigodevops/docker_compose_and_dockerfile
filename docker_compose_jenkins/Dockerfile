@@ -1,5 +1,5 @@
 # Use the official Jenkins base image with JDK 17
-FROM jenkins/jenkins:2.443-jdk17
+FROM jenkins/ssh-agent:jdk17
 
 # Switch to root user for installation
 USER root
@@ -7,6 +7,9 @@ USER root
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y python3-venv
+
+#COPY --chown=jenkins:jenkins ./plugins.txt /usr/share/jenkins/plugins.txt
+#RUN jenkins-plugin-cli --plugin-file=/usr/share/jenkins/plugins.txt
 
 # Create a virtual environment
 RUN python3 -m venv /opt/venv
