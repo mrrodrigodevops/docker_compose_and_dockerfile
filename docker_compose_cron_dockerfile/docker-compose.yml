@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  cron_python:
+    build: .
+    container_name: mobile-push-notification
+    networks:
+      - dev_network
+    restart: unless-stopped
+
+networks:
+  dev_network:
+    driver: bridge
