@@ -1,0 +1,20 @@
+# Defina a imagem base
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+
+# Defina o diretório de trabalho dentro do container
+WORKDIR /src
+
+# Copie o arquivo de projeto e restaure as dependências
+COPY corarestaurantemelevacore/CoraRestauranteMeLeva.Core/CoraRestauranteMeLeva.Core.csproj corarestaurantemelevacore/
+RUN dotnet restore corarestaurantemelevacore/CoraRestauranteMeLeva.Core.csproj
+
+# Copie todo o restante do projeto e publique
+COPY corarestaurantemelevacore/ corarestaurantemelevacore/
+WORKDIR /src/corarestaurantemelevacore/CoraRestauranteMeLeva.Core
+RUN dotnet publish CoraRestauranteMeLeva.Core.csproj -c Release -o /app/out
+
+# Defina a imagem final
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
+WORKDIR /app
+COPY --from=build /app/out .
+# ENTRYPOINT ["dotnet", "CoraRestauranteMeLeva.Core.dll"]
