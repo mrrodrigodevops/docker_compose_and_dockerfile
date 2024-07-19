@@ -1,0 +1,25 @@
+# Use a imagem gerada pelo Dockerfile.core como base
+FROM corarestaurantemelevacore:latest AS core
+
+# Defina a imagem base para o build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+
+# Defina o diretório de trabalho dentro do container
+WORKDIR /src
+
+# Copie todos os arquivos do diretório corarestaurantemelevavitrineclientes para o container
+COPY corarestaurantemelevavitrineclientes/ corarestaurantemelevavitrineclientes/
+
+# Copie a saída de publicação do Core para o local esperado pelo VitrineClientes
+RUN mkdir -p /src/CoraRestauranteMeLevaCore/
+COPY --from=core /app /src/CoraRestauranteMeLevaCore/
+
+# Publique o projeto VitrineClientes
+WORKDIR /src/corarestaurantemelevavitrineclientes/CoraRestauranteMeLeva.VitrineClientes.SiteMVC
+RUN dotnet publish CoraRestauranteMeLeva.VitrineClientes.SiteMVC.csproj -c Release -o /app/out
+
+# Defina a imagem final
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
+WORKDIR /app
+COPY --from=build /app/out .
+ENTRYPOINT ["dotnet", "CoraRestauranteMeLeva.VitrineClientes.SiteMVC.dll"]
