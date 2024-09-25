@@ -1,0 +1,31 @@
+# version: '3'
+services:
+  pytorch-2302:
+    build:
+      context: .
+      dockerfile: Dockerfile-ia
+    # ports:
+    #   - "5021:5021"
+    #image: jurimetria/gpu_ia04_service:latest
+    container_name: gpu_ia
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ipc: host
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      stack:
+        soft: 67108864
+        hard: 67108864
+    networks:
+      - ia-network
+    restart: always
+    volumes:
+      - /mnt/dados/models/scripts:/run_scripts
+      - /var/logs:/logs
+
+networks:
+  ia-network:
+    external: true
