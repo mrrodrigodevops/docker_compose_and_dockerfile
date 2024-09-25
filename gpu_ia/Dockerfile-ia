@@ -1,0 +1,49 @@
+FROM nvcr.io/nvidia/pytorch:23.02-py3 as jurimetria_base
+EXPOSE 5021
+
+RUN apt-get update
+RUN apt-get install -y locales locales-all
+
+ENV LC_ALL pt_BR.UTF-8
+ENV LANG pt_BR.UTF-8
+ENV LANGUAGE pt_BR:pt
+
+COPY ./requirements.txt /app/requirements-jurimetria.txt
+COPY ./requirements-tr-service.txt /app/requirements-tr-service.txt
+COPY . /app/jurimetria
+
+WORKDIR /app/
+
+# RUN pip install --no-cache-dir -r requirements-jurimetria.txt -r requirements-tr-service.txt
+# RUN pip install --no-cache-dir allennlp allennlp_models allennlp_datalawyer
+# RUN pip install -e ./jurimetria
+
+# RUN pip install --no-cache-dir --force-reinstall typing-extensions==4.5.0
+# RUN pip install --no-cache-dir --force-reinstall elasticsearch==7.9.0 elasticsearch-dsl==7.4.1
+# RUN pip uninstall -y transformer-engine
+# RUN pip install --no-cache-dir --force-reinstall pydantic==1.10.12
+# RUN pip install --no-cache-dir --force-reinstall torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
+
+RUN pip install -r requirements-jurimetria.txt -r requirements-tr-service.txt
+RUN pip install allennlp allennlp_models allennlp_datalawyer
+RUN pip install -e ./jurimetria
+
+RUN pip install --force-reinstall typing-extensions==4.5.0
+RUN pip install --force-reinstall elasticsearch==7.9.0 elasticsearch-dsl==7.4.1
+RUN pip uninstall -y transformer-engine
+RUN pip install --force-reinstall pydantic==1.10.12
+RUN pip install --force-reinstall torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
+
+RUN python -m spacy download pt_core_news_lg
+RUN python -m nltk.downloader punkt
+RUN python -c 'import stanza; stanza.download("pt")'
+
+ENV TZ="America/Sao_Paulo"
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /scripts
+
+COPY run_all_scripts.sh /scripts/run_all_scripts.sh
+RUN chmod +x /scripts/run_all_scripts.sh
+
+CMD ["bash", "/scripts/run_all_scripts.sh"]
