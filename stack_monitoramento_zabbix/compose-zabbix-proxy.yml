@@ -1,0 +1,31 @@
+volumes:
+  zabbix_db:
+
+networks:
+  network-zabbix:
+    driver: bridge
+
+services:
+  zabbix-proxy:
+    container_name: zabbix-proxy
+    image: zabbix/zabbix-proxy-sqlite3:6.4.15-ubuntu
+    restart: always
+    ports:
+      - "10051:10051"
+    volumes:
+      - zabbix_db:/var/lib/zabbix/db_data
+      - /etc/localtime:/etc/localtime:ro
+      - ./snmptraps:/var/lib/zabbix/snmptraps
+      - ./psk/zabbix_proxy.psk:/var/lib/zabbix/enc/zabbix_proxy.psk
+    environment:
+      - ZBX_HOSTNAME=zabbix-proxy
+      - ZBX_SERVER_HOST= HOSTSERVERIP
+      - ZBX_SERVER_PORT=10051
+      - ZBX_DEBUGLEVEL=3
+      - ZBX_TLSCONNECT=psk
+      - ZBX_TLSACCEPT=psk
+      - ZBX_TLSPSKIDENTITY=zbx-proxy
+      - ZBX_TLSPSKFILE=zabbix_proxy.psk
+      - ZBX_CACHESIZE=2G
+    networks:
+      - network-zabbix
