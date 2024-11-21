@@ -1,0 +1,26 @@
+version: '3.8'
+
+networks:
+  jenkins_net:
+    external: true
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jenkins-with-awscli
+    container_name: jenkins
+    privileged: true
+    user: root
+    restart: always
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    network_mode: "host"
+    #networks:
+    #  - jenkins_net
+    volumes:
+      - "/mnt/jenkins_compose/jenkins_configuration:/var/jenkins_home"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - /usr/bin/docker:/usr/bin/docker  # Mount the Docker binary from the host
